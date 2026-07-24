@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="FutGonZ — camisetas de fútbol Fan y Jugador. Clubes y selecciones.">
+  <meta name="theme-color" content="#080a0b">
+<meta property="og:title" content="FutGonZ | Camisetas de fútbol">
+<meta property="og:description" content="Encuentra tu próxima camiseta.">
+  <title>FutGonZ — Camisetas de fútbol</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#catalogo">Saltar al catálogo</a>
+  <header class="header">
+<a class="brand" href="#inicio" aria-label="FutGonZ, inicio">
+<img src="logo.png" alt="">
+<span>FutGonZ</span>
+</a>
+<label class="search">
+<span>⌕</span>
+<input id="search" type="search" placeholder="Buscar equipo o camiseta" aria-label="Buscar">
+</label>
+<a class="header-instagram" href="https://instagram.com/futgonz" target="_blank" rel="noopener">Instagram ↗</a>
+<button id="favoritesToggle" class="icon-button" aria-label="Ver mis favoritos"><span class="favorites-icon" aria-hidden="true">♡</span><span class="favorites-label">Mis favoritos</span><span id="favoritesCount">0</span>
+</button>
+</header>
+  <main id="inicio">
+    <section class="hero">
+<p class="eyebrow">COLECCIÓN 26/27</p>
+<h1>Las mejores camisetas<br>
+<em>de fútbol.</em>
+</h1>
+<p>Clubes y selecciones de todo el mundo. Versiones Fan y Jugador disponibles. Calidad premium y envío rápido.</p>
+<a class="primary" href="#catalogo">Ver catálogo <span>↓</span>
+</a>
+<ul class="hero-trust">
+<li>🚚 Envío gratis a partir de 2 camisetas</li>
+<li>✓ Calidad premium — si no te convence, te devolvemos el dinero</li>
+</ul>
+</section>
+    <section class="popular wrap" aria-labelledby="popular-title">
+<div class="section-head">
+<div>
+<p class="eyebrow">SELECCIÓN FUTGONZ</p>
+<h2 id="popular-title">Las más populares</h2>
+</div>
+<a href="#catalogo">Ver todas →</a>
+</div>
+<div id="popularGrid" class="products popular-grid">
+</div>
+</section>
+    <section id="catalogo" class="catalog wrap" aria-labelledby="catalog-title">
+<div class="catalog-title">
+<p class="eyebrow">CATÁLOGO</p>
+<h2 id="catalog-title">Encuentra la tuya.</h2>
+<p id="resultCount" aria-live="polite">
+</p>
+</div>
+      <div class="toolbar">
+<button id="filterButton" class="filter-button" aria-expanded="false" aria-controls="filters">Filtros <span>+</span>
+</button>
+<div id="filters" class="filters" hidden>
+        <label>Tipo<select id="typeFilter">
+<option value="">Todos</option>
+<option>Fan</option>
+<option>Jugador</option>
+</select>
+</label>
+        <label>Categoría<select id="categoryFilter">
+<option value="">Todas</option>
+<option>Club</option>
+<option>Selección</option>
+</select>
+</label>
+        <label>Liga<select id="leagueFilter">
+<option value="">Todas</option>
+</select>
+</label>
+        <label>Equipo<select id="teamFilter">
+<option value="">Todos</option>
+</select>
+</label>
+        <label>Temporada<select id="seasonFilter">
+<option value="">Todas</option>
+</select>
+</label>
+        <label>Marca<select id="brandFilter">
+<option value="">Todas</option>
+</select>
+</label>
+        <label>Disponibilidad<select id="stockFilter">
+<option value="">Todas</option>
+<option value="Disponible">Disponible</option>
+<option value="Próximamente">Próximamente</option>
+</select>
+</label>
+        <button id="clearFilters" class="text-button">Limpiar filtros</button>
+      </div>
+</div>
+<div id="productGrid" class="products">
+</div>
+<div class="load-more-wrap">
+<button id="loadMore" class="load-more" hidden>Ver más camisetas <span>↓</span>
+</button>
+</div>
+    </section>
+  </main>
+  <footer>
+<a class="brand" href="#inicio">
+<img src="logo.png" alt="">
+<span>FutGonZ</span>
+</a>
+<p>Tu camiseta. Tu historia.</p>
+<nav>
+<a href="https://instagram.com/futgonz" target="_blank" rel="noopener">Instagram</a>
+</nav>
+<small>© <span id="year">
+</span> FutGonZ</small>
+</footer>
+  <dialog id="productModal" aria-labelledby="modalTitle">
+<button id="closeModal" class="modal-close" aria-label="Cerrar">×</button>
+<div id="modalContent">
+</div>
+</dialog>
+  <template id="cardTemplate">
+<article class="card">
+<button class="favorite" aria-label="Guardar en favoritos">♡</button>
+<button class="card-open">
+<span class="product-media">
+<img class="product-photo product-photo--main" loading="lazy" alt="">
+<img class="product-photo product-photo--hover" loading="lazy" alt="">
+</span>
+<span class="badge">
+</span>
+<div class="card-info">
+<p class="meta">
+</p>
+<h3>
+</h3>
+<div>
+<strong class="price">
+</strong>
+<span>Ver detalles →</span>
+</div>
+</div>
+</button>
+</article>
+</template>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"FutGonZ","description":"Catálogo de camisetas de fútbol"}</script>
+  <script src="products.js">
+</script>
+<script src="app.js">
+</script>
+</body>
+</html>
