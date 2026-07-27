@@ -76,6 +76,21 @@ $('#filterButton').onclick=()=>{const filters=$('#filters'),show=filters.hidden;
 $('#clearFilters').onclick=()=>{$$('#filters select').forEach(select=>select.value='');$('#search').value='';visibleProducts=20;render()};
 $('#favoritesToggle').onclick=()=>{showingFavorites=!showingFavorites;visibleProducts=20;$('.favorites-label').textContent=showingFavorites?'Volver al catalogo':'Mis favoritos';$('#favoritesCount').hidden=showingFavorites;render();location.hash='catalogo'};$('#loadMore').onclick=()=>{visibleProducts+=20;render()};
 $('#closeModal').onclick=()=>$('#productModal').close();$('#productModal').addEventListener('click',event=>{if(event.target===$('#productModal'))$('#productModal').close()});
+$('#requestButton').onclick=()=>{$('#requestModal').showModal();$('#requestTeam').focus()};
+$('#closeRequestModal').onclick=()=>$('#requestModal').close();
+$('#requestModal').addEventListener('click',event=>{if(event.target===$('#requestModal'))$('#requestModal').close()});
+$('#requestModal').addEventListener('close',()=>{$('#requestTeam').value='';$('#requestDetails').value=''});
+$('#sendRequest').onclick=()=>{
+  const team=$('#requestTeam').value.trim();
+  if(!team){$('#requestTeam').focus();return}
+  const details=$('#requestDetails').value.trim();
+  const message=`Hola FutGonZ, quiero solicitar una camiseta que no veo en el catálogo:\n\nCamiseta: ${team}\nDetalles: ${details||'Sin detalles adicionales'}\n\n¿La podríais conseguir?`;
+  copyText(message).then(()=>{
+    window.open(`https://ig.me/m/${INSTAGRAM_USER}`,'_blank','noopener');
+    toast('Solicitud copiada. Pégala en el chat de Instagram y envíala.');
+    $('#requestModal').close();
+  });
+};
 $('#favoritesToggle').innerHTML='<span class="favorites-icon" aria-hidden="true">&hearts;</span><span class="favorites-label">Mis favoritos</span><span id="favoritesCount">0</span>';
 $$('footer nav a[href="#"]').forEach(link=>link.remove());
 $('#year').textContent=new Date().getFullYear();saveFavorites();render();

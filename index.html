@@ -52,10 +52,13 @@
 </section>
     <section id="catalogo" class="catalog wrap" aria-labelledby="catalog-title">
 <div class="catalog-title">
+<div>
 <p class="eyebrow">CATÁLOGO</p>
 <h2 id="catalog-title">Encuentra la tuya.</h2>
 <p id="resultCount" aria-live="polite">
 </p>
+</div>
+<button id="requestButton" class="primary request-cta" type="button">Solicitar camiseta <span>+</span></button>
 </div>
       <div class="toolbar">
 <button id="filterButton" class="filter-button" aria-expanded="false" aria-controls="filters">Filtros <span>+</span>
@@ -121,6 +124,22 @@
   <dialog id="productModal" aria-labelledby="modalTitle">
 <button id="closeModal" class="modal-close" aria-label="Cerrar">×</button>
 <div id="modalContent">
+</div>
+</dialog>
+  <dialog id="requestModal" aria-labelledby="requestModalTitle">
+<button id="closeRequestModal" class="modal-close" aria-label="Cerrar">×</button>
+<div class="request-modal-content">
+<p class="eyebrow">SOLICITAR CAMISETA</p>
+<h2 id="requestModalTitle">¿No encuentras tu camiseta?</h2>
+<p>Dinos qué camiseta buscas y te contestamos por Instagram para confirmar disponibilidad y precio.</p>
+<label class="request-field">Camiseta que buscas
+<input id="requestTeam" type="text" placeholder="Ej: AC Milan 2007, Boca Juniors 2ª equipación...">
+</label>
+<label class="request-field">Detalles (talla, temporada, marca...) — opcional
+<textarea id="requestDetails" rows="3" placeholder="Cualquier detalle que nos ayude a encontrarla"></textarea>
+</label>
+<button id="sendRequest" class="instagram" type="button">Enviar solicitud por Instagram <span>↗</span></button>
+<p class="consult-note">Al enviar se copiará tu solicitud para que solo tengas que pegarla en el chat de Instagram y enviarla.</p>
 </div>
 </dialog>
   <template id="cardTemplate">
