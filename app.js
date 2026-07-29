@@ -5,6 +5,7 @@ let favorites=new Set(JSON.parse(localStorage.getItem('futgonz-favorites')||'[]'
 let showingFavorites=false;
 let visibleProducts=20;
 const money=value=>value.toLocaleString('es-ES',{style:'currency',currency:'EUR'});
+const priceFor=(product,type)=>product.isRetro?product.price:(type==='Jugador'?product.priceJugador:product.price);
 
 function saveFavorites(){localStorage.setItem('futgonz-favorites',JSON.stringify([...favorites]));$('#favoritesCount').textContent=favorites.size;$('#favoritesToggle').setAttribute('aria-label',`Ver mis favoritos (${favorites.size})`)}
 function card(product){
@@ -12,7 +13,7 @@ function card(product){
   const [mainImage,hoverImage]=fragment.querySelectorAll('.product-photo');
   mainImage.src=product.images[0].src;mainImage.alt=product.images[0].alt;hoverImage.src=product.images[1].src;hoverImage.alt='';
   fragment.querySelector('.badge').textContent=product.type;fragment.querySelector('.meta').textContent=`${product.category} · ${product.season} · ${product.id}`;
-  fragment.querySelector('h3').textContent=product.name;fragment.querySelector('.price').textContent=money(product.price);
+  fragment.querySelector('h3').textContent=product.name;fragment.querySelector('.price').textContent=(product.isRetro?'':'Desde ')+money(product.price);
   favorite.textContent=favorites.has(product.id)?'♥':'♡';favorite.classList.toggle('active',favorites.has(product.id));
   favorite.onclick=event=>{event.stopPropagation();favorites.has(product.id)?favorites.delete(product.id):favorites.add(product.id);saveFavorites();render()};open.onclick=()=>openModal(product);return fragment;
 }
@@ -26,28 +27,43 @@ function currentProducts(){
 function render(){const products=currentProducts(),shown=products.slice(0,visibleProducts),grid=$('#productGrid');if(showingFavorites&&!products.length){const empty=document.createElement('section');empty.className='favorites-empty';empty.innerHTML='<span class="favorites-empty__icon" aria-hidden="true">&hearts;</span><h3>Aun no tienes camisetas guardadas.</h3><p>Guarda tus favoritas pulsando el corazon de cualquier camiseta.</p><button id="backToCatalog" class="primary" type="button">Volver al catalogo <span>&rarr;</span></button>';grid.replaceChildren(empty);$('#backToCatalog').onclick=()=>{showingFavorites=false;visibleProducts=20;$('.favorites-label').textContent='Mis favoritos';$('#favoritesCount').hidden=false;render();location.hash='catalogo'}}else grid.replaceChildren(...shown.map(card));$('#resultCount').textContent=`${products.length} camisetas${showingFavorites?' guardadas':''}`;$('#favoritesToggle').classList.toggle('active',showingFavorites);$('#favoritesToggle').classList.toggle('has-favorites',favorites.size>0);$('#loadMore').hidden=showingFavorites&&!products.length||shown.length>=products.length}
 function copyText(text){if(navigator.clipboard?.writeText)return navigator.clipboard.writeText(text);const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();document.execCommand('copy');area.remove();return Promise.resolve()}
 function toast(message){let node=$('#toast');if(!node){node=document.createElement('div');node.id='toast';node.setAttribute('role','status');document.body.append(node)}node.textContent=message;node.classList.add('show');setTimeout(()=>node.classList.remove('show'),4000)}
+const CONFEDERACIONES={
+  UEFA:['España','Francia','Alemania','Italia','Portugal','Inglaterra','Bélgica','Croacia','Países Bajos'],
+  CONMEBOL:['Argentina','Brasil','Uruguay','Colombia','Venezuela','Chile','Perú','Paraguay','Ecuador','Bolivia'],
+  CONCACAF:['México','Estados Unidos','Canadá','Costa Rica','Jamaica'],
+  CAF:['Marruecos','Senegal','Nigeria','Egipto','Argelia','Camerún','Ghana','Túnez','Sudáfrica'],
+  AFC:['Japón','Corea del Sur','Arabia Saudí','Catar','Irán','Australia','China']
+};
+function confederationOf(country){
+  return Object.keys(CONFEDERACIONES).find(confederacion=>CONFEDERACIONES[confederacion].includes(country));
+}
+const COPAS_SELECCION={
+  UEFA:['Sin parche','Mundial','Eurocopa','Nations League'],
+  CONMEBOL:['Sin parche','Mundial','Copa América'],
+  CONCACAF:['Sin parche','Mundial','Copa Oro','Nations League'],
+  CAF:['Sin parche','Mundial','Copa Africana de Naciones'],
+  AFC:['Sin parche','Mundial','Copa Asiática']
+};
+const COPAS_CLUB={
+  UEFA:['Champions League','Europa League','Conference League'],
+  CONMEBOL:['Copa Libertadores','Copa Sudamericana','Recopa Sudamericana'],
+  CONCACAF:['Concachampions','Leagues Cup'],
+  CAF:['Liga de Campeones de la CAF','Copa Confederación de la CAF'],
+  AFC:['Liga de Campeones de la AFC']
+};
 function availablePatches(product){
-  const europe=['Espa\u00f1a','Francia','Alemania','Italia','Portugal','Inglaterra','B\u00e9lgica','Croacia','Pa\u00edses Bajos'];
-  const america=['Argentina','Brasil','Uruguay','M\u00e9xico','Colombia','Venezuela'];
-  const africa=['Marruecos'];
-  const asia=['Jap\u00f3n'];
-  const country=product.country;
-  if(product.category==='Selecci\u00f3n'){
-    if(europe.includes(country))return ['Sin parche','Mundial','Eurocopa','Nations League'];
-    if(america.includes(country))return ['Sin parche','Mundial','Copa Am\u00e9rica'];
-    if(africa.includes(country))return ['Sin parche','Mundial','Copa Africana de Naciones'];
-    if(asia.includes(country))return ['Sin parche','Mundial','Copa Asi\u00e1tica'];
-    return ['Sin parche','Mundial'];
-  }
+  const country=product.country,confederacion=confederationOf(country);
+  if(product.category==='Selección')return COPAS_SELECCION[confederacion]||['Sin parche','Mundial'];
   const domestic={
-    'Espa\u00f1a':['LaLiga','Copa del Rey','Supercopa de Espa\u00f1a'],
+    'España':['LaLiga','Copa del Rey','Supercopa de España'],
     Inglaterra:['Premier League','FA Cup','Carabao Cup'],
     Italia:['Serie A','Coppa Italia','Supercoppa Italiana'],
     Alemania:['Bundesliga','DFB-Pokal','Supercopa de Alemania'],
-    Francia:['Ligue 1','Coupe de France','Troph\u00e9e des Champions'],
-    Portugal:['Liga Portugal','Ta\u00e7a de Portugal','Superta\u00e7a']
+    Francia:['Ligue 1','Coupe de France','Trophée des Champions'],
+    Portugal:['Liga Portugal','Taça de Portugal','Supertaça'],
+    Argentina:['Liga Profesional Argentina','Copa Argentina','Trofeo de Campeones']
   };
-  return ['Sin parche',...(domestic[country]||[product.league]),'Champions League','Europa League','Conference League'];
+  return ['Sin parche',...(domestic[country]||[product.league]),...(COPAS_CLUB[confederacion]||[])];
 }
 function openModal(product){
   const dialog=$('#productModal');let selectedSize='M',selectedType='Fan',selectedPatch='Sin parche',photoIndex=0,guideOpen=false;
@@ -55,16 +71,16 @@ function openModal(product){
   const gallery=()=>`<div class="gallery"><div class="gallery__main"><img id="galleryMain" src="${product.images[photoIndex].src}" alt="${product.images[photoIndex].alt}"><span class="zoom-hint">Pulsa para ampliar</span></div><div class="gallery__thumbs">${product.images.map((photo,index)=>`<button class="gallery__thumb ${index===photoIndex?'active':''}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"><img src="${photo.src}" alt=""></button>`).join('')}</div></div>`;
   const version=product.isRetro?`<fieldset class="retro-info"><legend>Tela</legend><strong>Retro</strong><p>Las camisetas retro no tienen versión Fan ni Jugador para elegir: mantienen su diseño clásico original en una única tela.</p></fieldset>`:`<fieldset><legend>Versión</legend><div class="type-toggle"><button class="selected" data-type="Fan">Fan</button><button data-type="Jugador">Jugador</button></div><p id="typeHint">Corte clásico, cómodo para el uso diario y con excelente relación calidad-precio.</p></fieldset>`;
   const guide=()=>`<figure class="size-guide"><img src="tabla.png" alt="Tabla de tallas de camisetas de futbol para hombre"><figcaption>Guia de tallas</figcaption></figure>`;
-  $('#modalContent').innerHTML=`<div class="modal-grid"><div class="modal-gallery">${gallery()}</div><div class="modal-details"><p class="eyebrow">${product.category.toUpperCase()} · ${product.id}</p><h2 id="modalTitle">${product.name}</h2><strong class="modal-price">${money(product.price)}</strong><p class="trust-note">🚚 Envío gratis a partir de 2 camisetas · ✓ Calidad premium: si no te convence, te devolvemos el dinero.</p><dl><div><dt>Temporada</dt><dd>${product.season}</dd></div><div><dt>Marca</dt><dd>${product.brand}</dd></div><div><dt>Liga</dt><dd>${product.league}</dd></div><div><dt>Disponibilidad</dt><dd>${product.available}</dd></div></dl><fieldset><legend>Talla</legend>${product.sizes.map(size=>`<button class="size ${size==='M'?'selected':''}">${size}</button>`).join('')}</fieldset><button id="guideToggle" class="size-guide-toggle">Guía de tallas +</button>${guide()}${version}<a id="consultInstagram" class="instagram" href="https://ig.me/m/${INSTAGRAM_USER}" target="_blank" rel="noopener">Consultar por Instagram <span>↗</span></a><p class="consult-note">Al abrir Instagram se copiará tu pedido para que solo tengas que pegarlo y enviarlo.</p></div></div><section class="related"><div class="related__heading"><p class="eyebrow">SELECCIONADAS PARA TI</p><h3>También te puede gustar</h3></div><div class="related-products">${related.map(item=>`<button data-product="${item.id}"><img src="${item.images[0].src}" alt="${item.name}"><span>${item.name}</span><small>${item.category} · ${item.season}</small><strong>${money(item.price)}</strong></button>`).join('')}</div></section>`;
+  $('#modalContent').innerHTML=`<div class="modal-grid"><div class="modal-gallery">${gallery()}</div><div class="modal-details"><p class="eyebrow">${product.category.toUpperCase()} · ${product.id}</p><h2 id="modalTitle">${product.name}</h2><strong class="modal-price" id="modalPrice">${money(priceFor(product,selectedType))}</strong><p class="trust-note">🚚 Envío gratis a partir de 2 camisetas · ✓ Calidad premium: si no te convence, te devolvemos el dinero.</p><dl><div><dt>Temporada</dt><dd>${product.season}</dd></div><div><dt>Marca</dt><dd>${product.brand}</dd></div><div><dt>Liga</dt><dd>${product.league}</dd></div><div><dt>Disponibilidad</dt><dd>${product.available}</dd></div></dl><fieldset><legend>Talla</legend>${product.sizes.map(size=>`<button class="size ${size==='M'?'selected':''}">${size}</button>`).join('')}</fieldset><button id="guideToggle" class="size-guide-toggle">Guía de tallas +</button>${guide()}${version}<a id="consultInstagram" class="instagram" href="https://ig.me/m/${INSTAGRAM_USER}" target="_blank" rel="noopener">Consultar por Instagram <span>↗</span></a><p class="consult-note">Al abrir Instagram se copiará tu pedido para que solo tengas que pegarlo y enviarlo.</p></div></div><section class="related"><div class="related__heading"><p class="eyebrow">SELECCIONADAS PARA TI</p><h3>También te puede gustar</h3></div><div class="related-products">${related.map(item=>`<button data-product="${item.id}"><img src="${item.images[0].src}" alt="${item.name}"><span>${item.name}</span><small>${item.category} · ${item.season}</small><strong>${(item.isRetro?'':'Desde ')+money(item.price)}</strong></button>`).join('')}</div></section>`;
   const bindModal=()=>{
     if(!$('.patch-selector')){const patches=availablePatches(product);const patchField=document.createElement('fieldset');patchField.className='patch-selector';patchField.innerHTML=`<legend>Parche</legend><div class="patch-options">${patches.map(patch=>`<button class="${patch==='Sin parche'?'selected':''}" data-patch="${patch}">${patch}</button>`).join('')}</div>`;$('#consultInstagram').before(patchField)}$$('[data-patch]').forEach(button=>button.onclick=()=>{selectedPatch=button.dataset.patch;$$('[data-patch]').forEach(item=>item.classList.toggle('selected',item===button))});
     $$('.size').forEach(button=>button.onclick=()=>{$$('.size').forEach(item=>item.classList.remove('selected'));button.classList.add('selected');selectedSize=button.textContent});
-    $$('[data-type]').forEach(button=>button.onclick=()=>{selectedType=button.dataset.type;$$('[data-type]').forEach(item=>item.classList.toggle('selected',item===button));$('#typeHint').textContent=selectedType==='Fan'?'Corte clásico, cómodo para el uso diario y con excelente relación calidad-precio.':'La misma versión utilizada por los futbolistas profesionales, con tejido más ligero, transpirable y ajuste deportivo.'});
+    $$('[data-type]').forEach(button=>button.onclick=()=>{selectedType=button.dataset.type;$$('[data-type]').forEach(item=>item.classList.toggle('selected',item===button));$('#typeHint').textContent=selectedType==='Fan'?'Corte clásico, cómodo para el uso diario y con excelente relación calidad-precio.':'La misma versión utilizada por los futbolistas profesionales, con tejido más ligero, transpirable y ajuste deportivo.';$('#modalPrice').textContent=money(priceFor(product,selectedType))});
     $$('[data-gallery-index]').forEach(button=>button.onclick=()=>{photoIndex=Number(button.dataset.galleryIndex);$('.modal-gallery').innerHTML=gallery();bindModal()});
     $('#galleryMain').onclick=()=>$('.gallery__main').classList.toggle('zoomed');
     $('#guideToggle').onclick=()=>{let guideDialog=$('#sizeGuideModal');if(!guideDialog){guideDialog=document.createElement('dialog');guideDialog.id='sizeGuideModal';guideDialog.className='size-guide-modal';document.body.append(guideDialog);guideDialog.addEventListener('click',event=>{if(event.target===guideDialog)guideDialog.close()})}guideDialog.innerHTML='<button class="size-guide-modal__close" aria-label="Cerrar guia de tallas">&times;</button><img src="tabla.png" alt="Tabla de tallas de camisetas de futbol para hombre">';guideDialog.querySelector('button').onclick=()=>guideDialog.close();guideDialog.showModal()};
     $('#consultInstagram').onclick=()=>{const type=product.isRetro?'Retro':selectedType;const message=`Hola FutGonZ, quiero consultar esta camiseta:\n\nProducto: ${product.name}\nReferencia: ${product.id}\nCategoría: ${product.category}\nEquipo: ${product.team}\nTemporada: ${product.season}\nTipo: ${type}\nTalla: ${selectedSize}\nPrecio: ${money(product.price)}\n\n¿La tenéis disponible?`;copyText(message).then(()=>toast('Pedido copiado. Pégalo en el chat de Instagram y envíalo.'))};
-    $('#consultInstagram').onclick=()=>{const type=product.isRetro?'Retro':selectedType;const message=`Hola FutGonZ, quiero consultar esta camiseta:\n\nProducto: ${product.name}\nReferencia: ${product.id}\nCategoria: ${product.category}\nEquipo: ${product.team}\nTemporada: ${product.season}\nTipo: ${type}\nTalla: ${selectedSize}\nParche: ${selectedPatch}\nPrecio: ${money(product.price)}\n\nLa teneis disponible?`;copyText(message).then(()=>toast('Pedido copiado. Pegalo en el chat de Instagram y envialo.'))};
+    $('#consultInstagram').onclick=()=>{const type=product.isRetro?'Retro':selectedType;const message=`Hola FutGonZ, quiero consultar esta camiseta:\n\nProducto: ${product.name}\nReferencia: ${product.id}\nCategoria: ${product.category}\nEquipo: ${product.team}\nTemporada: ${product.season}\nTipo: ${type}\nTalla: ${selectedSize}\nParche: ${selectedPatch}\nPrecio: ${money(priceFor(product,selectedType))}\n\nLa teneis disponible?`;copyText(message).then(()=>toast('Pedido copiado. Pegalo en el chat de Instagram y envialo.'))};
     $$('[data-product]').forEach(button=>button.onclick=()=>openModal(PRODUCTOS.find(item=>item.id===button.dataset.product)));
   };bindModal();dialog.showModal();
 }
