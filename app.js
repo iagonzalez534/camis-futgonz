@@ -27,43 +27,28 @@ function currentProducts(){
 function render(){const products=currentProducts(),shown=products.slice(0,visibleProducts),grid=$('#productGrid');if(showingFavorites&&!products.length){const empty=document.createElement('section');empty.className='favorites-empty';empty.innerHTML='<span class="favorites-empty__icon" aria-hidden="true">&hearts;</span><h3>Aun no tienes camisetas guardadas.</h3><p>Guarda tus favoritas pulsando el corazon de cualquier camiseta.</p><button id="backToCatalog" class="primary" type="button">Volver al catalogo <span>&rarr;</span></button>';grid.replaceChildren(empty);$('#backToCatalog').onclick=()=>{showingFavorites=false;visibleProducts=20;$('.favorites-label').textContent='Mis favoritos';$('#favoritesCount').hidden=false;render();location.hash='catalogo'}}else grid.replaceChildren(...shown.map(card));$('#resultCount').textContent=`${products.length} camisetas${showingFavorites?' guardadas':''}`;$('#favoritesToggle').classList.toggle('active',showingFavorites);$('#favoritesToggle').classList.toggle('has-favorites',favorites.size>0);$('#loadMore').hidden=showingFavorites&&!products.length||shown.length>=products.length}
 function copyText(text){if(navigator.clipboard?.writeText)return navigator.clipboard.writeText(text);const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();document.execCommand('copy');area.remove();return Promise.resolve()}
 function toast(message){let node=$('#toast');if(!node){node=document.createElement('div');node.id='toast';node.setAttribute('role','status');document.body.append(node)}node.textContent=message;node.classList.add('show');setTimeout(()=>node.classList.remove('show'),4000)}
-const CONFEDERACIONES={
-  UEFA:['España','Francia','Alemania','Italia','Portugal','Inglaterra','Bélgica','Croacia','Países Bajos'],
-  CONMEBOL:['Argentina','Brasil','Uruguay','Colombia','Venezuela','Chile','Perú','Paraguay','Ecuador','Bolivia'],
-  CONCACAF:['México','Estados Unidos','Canadá','Costa Rica','Jamaica'],
-  CAF:['Marruecos','Senegal','Nigeria','Egipto','Argelia','Camerún','Ghana','Túnez','Sudáfrica'],
-  AFC:['Japón','Corea del Sur','Arabia Saudí','Catar','Irán','Australia','China']
-};
-function confederationOf(country){
-  return Object.keys(CONFEDERACIONES).find(confederacion=>CONFEDERACIONES[confederacion].includes(country));
-}
-const COPAS_SELECCION={
-  UEFA:['Sin parche','Mundial','Eurocopa','Nations League'],
-  CONMEBOL:['Sin parche','Mundial','Copa América'],
-  CONCACAF:['Sin parche','Mundial','Copa Oro','Nations League'],
-  CAF:['Sin parche','Mundial','Copa Africana de Naciones'],
-  AFC:['Sin parche','Mundial','Copa Asiática']
-};
-const COPAS_CLUB={
-  UEFA:['Champions League','Europa League','Conference League'],
-  CONMEBOL:['Copa Libertadores','Copa Sudamericana','Recopa Sudamericana'],
-  CONCACAF:['Concachampions','Leagues Cup'],
-  CAF:['Liga de Campeones de la CAF','Copa Confederación de la CAF'],
-  AFC:['Liga de Campeones de la AFC']
-};
 function availablePatches(product){
-  const country=product.country,confederacion=confederationOf(country);
-  if(product.category==='Selección')return COPAS_SELECCION[confederacion]||['Sin parche','Mundial'];
+  const europe=['Espa\u00f1a','Francia','Alemania','Italia','Portugal','Inglaterra','B\u00e9lgica','Croacia','Pa\u00edses Bajos'];
+  const america=['Argentina','Brasil','Uruguay','M\u00e9xico','Colombia','Venezuela'];
+  const africa=['Marruecos'];
+  const asia=['Jap\u00f3n'];
+  const country=product.country;
+  if(product.category==='Selecci\u00f3n'){
+    if(europe.includes(country))return ['Sin parche','Mundial','Eurocopa','Nations League'];
+    if(america.includes(country))return ['Sin parche','Mundial','Copa Am\u00e9rica'];
+    if(africa.includes(country))return ['Sin parche','Mundial','Copa Africana de Naciones'];
+    if(asia.includes(country))return ['Sin parche','Mundial','Copa Asi\u00e1tica'];
+    return ['Sin parche','Mundial'];
+  }
   const domestic={
-    'España':['LaLiga','Copa del Rey','Supercopa de España'],
+    'Espa\u00f1a':['LaLiga','Copa del Rey','Supercopa de Espa\u00f1a'],
     Inglaterra:['Premier League','FA Cup','Carabao Cup'],
     Italia:['Serie A','Coppa Italia','Supercoppa Italiana'],
     Alemania:['Bundesliga','DFB-Pokal','Supercopa de Alemania'],
-    Francia:['Ligue 1','Coupe de France','Trophée des Champions'],
-    Portugal:['Liga Portugal','Taça de Portugal','Supertaça'],
-    Argentina:['Liga Profesional Argentina','Copa Argentina','Trofeo de Campeones']
+    Francia:['Ligue 1','Coupe de France','Troph\u00e9e des Champions'],
+    Portugal:['Liga Portugal','Ta\u00e7a de Portugal','Superta\u00e7a']
   };
-  return ['Sin parche',...(domestic[country]||[product.league]),...(COPAS_CLUB[confederacion]||[])];
+  return ['Sin parche',...(domestic[country]||[product.league]),'Champions League','Europa League','Conference League'];
 }
 function openModal(product){
   const dialog=$('#productModal');let selectedSize='M',selectedType='Fan',selectedPatch='Sin parche',photoIndex=0,guideOpen=false;
