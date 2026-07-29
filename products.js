@@ -10,7 +10,8 @@ function product(name,team,category,league,country,season,brand,isRetro=false,av
   const id=`FG-${String(nextId++).padStart(3,'0')}`;
   const imageIndex=(nextId-2)%imagePool.length;
   const photos=[imagePool[imageIndex],imagePool[(imageIndex+1)%imagePool.length]].map((photo,index)=>({src:`https://images.unsplash.com/photo-${photo}?auto=format&fit=crop&w=1200&h=1500&q=86`,alt:`${name}, ${index===0?'vista principal':'detalle'}`}));
-  return {id,name,team,category,league,country,season,brand,isRetro,type:isRetro?'Retro':'Fan / Jugador',available:available?'Disponible':'Próximamente',sizes:['S','M','L','XL','2XL','3XL','4XL'],price:isRetro?39.95:32.95,image:photos[0].src,images:photos,popular};
+  const PRECIO_FAN=28.95,PRECIO_JUGADOR=32.95,PRECIO_RETRO=39.95;
+  return {id,name,team,category,league,country,season,brand,isRetro,type:isRetro?'Retro':'Fan / Jugador',available:available?'Disponible':'Próximamente',sizes:['S','M','L','XL','2XL','3XL','4XL'],price:isRetro?PRECIO_RETRO:PRECIO_FAN,priceJugador:isRetro?null:PRECIO_JUGADOR,image:photos[0].src,images:photos,popular};
 }
 const moderna=(name,team,category,league,country,season,brand,available=true,popular=false)=>product(name,team,category,league,country,season,brand,false,available,popular);
 const retro=(name,team,category,league,country,season,brand,available=true,popular=false)=>product(name,team,category,league,country,season,brand,true,available,popular);
@@ -108,7 +109,7 @@ addUpcoming('River Plate 26/27','River Plate','Club','Liga Profesional Argentina
 addUpcoming('AC Milan Retro 2006/07','AC Milan','Club','Serie A','Italia','2006/07','Adidas',true);
 
 // Camisetas con fotos ya subidas: se marcan Disponible y usan sus fotos reales (ID-D.webp / ID-A.webp).
-const CAMISETAS_LISTAS=['Argentina 2026','Argentina 2026 2\u00aa equipaci\u00f3n','M\u00e9xico 2026','Colombia 2026','Venezuela 2026','River Plate 26/27','AC Milan Retro 2006/07','Atl\u00e9tico de Madrid 26/27','Sevilla 26/27'];
+const CAMISETAS_LISTAS=['Argentina 2026','Argentina 2026 2\u00aa equipaci\u00f3n','M\u00e9xico 2026','Colombia 2026','Venezuela 2026','River Plate 26/27','AC Milan Retro 2006/07','Atl\u00e9tico de Madrid 26/27','Sevilla 26/27','Valencia 26/27','Athletic Club 26/27','Real Sociedad 26/27','Manchester City 26/27','Manchester United 26/27','Liverpool 26/27','Arsenal 26/27'];
 PRODUCTOS.filter(product=>CAMISETAS_LISTAS.includes(product.name)).forEach(product=>{
   product.images=[
     {src:`${product.id}-D.webp`,alt:`${product.name}, vista delantera`},

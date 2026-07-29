@@ -10,85 +10,22 @@
      resolve(url) decide al instante qué archivo usar. Sin peticiones fallidas, sin tocar
      products.js nunca.
 
-  2) Precarga predictiva en segundo plano (mecanismo PRINCIPAL de carga)
-     El catálogo llama a ImageSystem.prefetch(urls) justo después de pintar el lote actual,
-     pasándole las imágenes del siguiente lote (p.ej. si se muestran las tarjetas 1-20, se
-     precargan en silencio las 21-40). Se descargan con new Image() -no se muestran-, con
-     concurrencia limitada y fetchPriority "low" para no competir por ancho de banda con lo
-     que el usuario está viendo ahora mismo. En conexiones 2G o con "ahorro de datos"
-     activado, la precarga por adelantado se desactiva sola.
+  2) Carga diferida real
+     Un único IntersectionObserver, compartido por todas las tarjetas aunque haya miles,
+     observa cada imagen y solo le asigna "src" cuando está a punto de entrar en pantalla
+     (rootMargin actúa como colchón de precarga).
 
-  3) IntersectionObserver como red de seguridad
-     Ya no es el mecanismo principal: cubre los casos que el prefetch predictivo no
-     adelantó (entrar directo a un producto por enlace, saltos de scroll extremos, etc).
-     rootMargin ampliado para dar más margen de reacción.
-
-  4) Imagen trasera bajo demanda
+  3) Imagen trasera bajo demanda
      Nunca se pide al pintar el catálogo. Se pide solo cuando hay intención real de verla
      (hover/touch en la tarjeta) o al abrir la ficha del producto.
 
-  5) Mejora a HD imperceptible
+  4) Mejora a HD imperceptible
      El modal de producto se abre al instante con la imagen ya cargada (comprimida u
      original) y, en paralelo, descarga la versión HD; cuando está decodificada, sustituye
      el "src" sin parpadeo.
 */
 const ImageSystem = (() => {
   let manifest = {};
-
-  // --- Estado de la precarga predictiva ---
-  const PREFETCH_CONCURRENCY = 4; // nº de descargas de precarga simultáneas como máximo
-  const prefetchQueue = [];
-  const prefetchSeen = new Set(); // evita pedir dos veces la misma URL
-  let activePrefetches = 0;
-
-  // No forzamos precarga por adelantado si el usuario va con datos limitados: en 2G/slow-2G
-  // o con "Ahorro de datos" activado, dejamos que sea solo el IntersectionObserver quien pida
-  // imágenes (más tarde, pero sin gastar de más en algo que quizá no se llegue a ver).
-  function isConstrainedNetwork() {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (!conn) return false;
-    if (conn.saveData) return true;
-    return conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g';
-  }
-
-  // Ejecuta la cola de precarga respetando el límite de concurrencia.
-  function runPrefetchQueue() {
-    while (activePrefetches < PREFETCH_CONCURRENCY && prefetchQueue.length) {
-      const url = prefetchQueue.shift();
-      activePrefetches++;
-      const img = new Image();
-      if ('fetchPriority' in img) img.fetchPriority = 'low';
-      const done = () => { activePrefetches--; runPrefetchQueue(); };
-      img.onload = done;
-      img.onerror = done;
-      img.src = url; // el navegador cachea la respuesta; cuando se pinte de verdad, sale de caché
-    }
-  }
-
-  function schedule(fn) {
-    if ('requestIdleCallback' in window) requestIdleCallback(fn, { timeout: 2000 });
-    else setTimeout(fn, 200);
-  }
-
-  // API pública: recibe URLs "originales" de producto (las mismas que se pasarían a
-  // lazyLoad) correspondientes al SIGUIENTE lote de tarjetas, y las descarga en silencio,
-  // sin tocar el DOM. El catálogo debe llamarla justo después de pintar el lote actual:
-  //   renderPage(products.slice(0, 20));
-  //   ImageSystem.prefetch(products.slice(20, 40).map(p => p.image));
-  function prefetch(urls) {
-    if (!urls || !urls.length || isConstrainedNetwork()) return;
-    manifestReady.then(() => {
-      schedule(() => {
-        urls.forEach(url => {
-          const { catalogSrc } = resolve(url);
-          if (prefetchSeen.has(catalogSrc)) return;
-          prefetchSeen.add(catalogSrc);
-          prefetchQueue.push(catalogSrc);
-        });
-        runPrefetchQueue();
-      });
-    });
-  }
 
   function fetchManifest() {
     const controller = new AbortController();
@@ -121,11 +58,9 @@ const ImageSystem = (() => {
     return { catalogSrc: hasComp ? compCandidate(url) : url, hdSrc: url, hasComp };
   }
 
-  // --- Carga diferida compartida (red de seguridad; el prefetch predictivo es el mecanismo
-  // principal). rootMargin amplio porque ahora es barato: solo entra en juego para lo que
-  // el prefetch no llegó a adelantar. ---
+  // --- Carga diferida compartida ---
   const observer = 'IntersectionObserver' in window
-    ? new IntersectionObserver(handleIntersections, { rootMargin: '2000px 0px', threshold: 0.01 })
+    ? new IntersectionObserver(handleIntersections, { rootMargin: '600px 0px', threshold: 0.01 })
     : null;
 
   function handleIntersections(entries) {
@@ -139,7 +74,7 @@ const ImageSystem = (() => {
   function applySrc(img) {
     const src = img.dataset.src;
     if (!src) return;
-    img.src = src; // si ya fue precargada vía prefetch(), el navegador la sirve de caché al instante
+    img.src = src;
     delete img.dataset.src;
   }
 
@@ -160,5 +95,5 @@ const ImageSystem = (() => {
     else { preloader.onload = swap; preloader.onerror = () => {}; }
   }
 
-  return { manifestReady, resolve, lazyLoad, upgradeToHD, prefetch };
+  return { manifestReady, resolve, lazyLoad, upgradeToHD };
 })();
