@@ -29,13 +29,14 @@ function copyText(text){if(navigator.clipboard?.writeText)return navigator.clipb
 function toast(message){let node=$('#toast');if(!node){node=document.createElement('div');node.id='toast';node.setAttribute('role','status');document.body.append(node)}node.textContent=message;node.classList.add('show');setTimeout(()=>node.classList.remove('show'),4000)}
 function availablePatches(product){
   const europe=['Espa\u00f1a','Francia','Alemania','Italia','Portugal','Inglaterra','B\u00e9lgica','Croacia','Pa\u00edses Bajos'];
-  const america=['Argentina','Brasil','Uruguay','M\u00e9xico','Colombia','Venezuela'];
+  const southAmerica=['Argentina','Brasil','Uruguay','Colombia','Venezuela'];
+  const northAmerica=['M\u00e9xico'];
   const africa=['Marruecos'];
   const asia=['Jap\u00f3n'];
   const country=product.country;
   if(product.category==='Selecci\u00f3n'){
     if(europe.includes(country))return ['Sin parche','Mundial','Eurocopa','Nations League'];
-    if(america.includes(country))return ['Sin parche','Mundial','Copa Am\u00e9rica'];
+    if(southAmerica.includes(country)||northAmerica.includes(country))return ['Sin parche','Mundial','Copa Am\u00e9rica'];
     if(africa.includes(country))return ['Sin parche','Mundial','Copa Africana de Naciones'];
     if(asia.includes(country))return ['Sin parche','Mundial','Copa Asi\u00e1tica'];
     return ['Sin parche','Mundial'];
@@ -46,9 +47,26 @@ function availablePatches(product){
     Italia:['Serie A','Coppa Italia','Supercoppa Italiana'],
     Alemania:['Bundesliga','DFB-Pokal','Supercopa de Alemania'],
     Francia:['Ligue 1','Coupe de France','Troph\u00e9e des Champions'],
-    Portugal:['Liga Portugal','Ta\u00e7a de Portugal','Superta\u00e7a']
+    Portugal:['Liga Portugal','Ta\u00e7a de Portugal','Superta\u00e7a'],
+    'B\u00e9lgica':['Jupiler Pro League','Copa de B\u00e9lgica'],
+    Croacia:['Prva HNL','Copa de Croacia'],
+    'Pa\u00edses Bajos':['Eredivisie','KNVB Beker','Johan Cruijff Schaal'],
+    Argentina:['Liga Profesional','Copa Argentina','Supercopa Argentina'],
+    Brasil:['Brasileir\u00e3o','Copa do Brasil','Supercopa do Brasil'],
+    Uruguay:['Primera Divisi\u00f3n','Copa Uruguay'],
+    Colombia:['Categor\u00eda Primera A','Copa Colombia','Superliga de Colombia'],
+    Venezuela:['Primera Divisi\u00f3n de Venezuela','Copa Venezuela'],
+    'M\u00e9xico':['Liga MX','Campe\u00f3n de Campeones'],
+    Marruecos:['Botola Pro','Copa del Trono'],
+    'Jap\u00f3n':['J1 League','Copa del Emperador']
   };
-  return ['Sin parche',...(domestic[country]||[product.league]),'Champions League','Europa League','Conference League'];
+  const continental=europe.includes(country)?['Champions League','Europa League','Conference League']
+    :southAmerica.includes(country)?['Copa Libertadores','Copa Sudamericana']
+    :northAmerica.includes(country)?['Concacaf Champions Cup','Leagues Cup']
+    :africa.includes(country)?['Liga de Campeones de la CAF','Copa Confederaci\u00f3n de la CAF']
+    :asia.includes(country)?['Liga de Campeones de la AFC']
+    :[];
+  return ['Sin parche',...(domestic[country]||[product.league]),...continental];
 }
 function openModal(product){
   const dialog=$('#productModal');let selectedSize='M',selectedType='Fan',selectedPatch='Sin parche',photoIndex=0,guideOpen=false;
