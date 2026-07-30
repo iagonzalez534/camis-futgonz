@@ -9,6 +9,12 @@
 <meta property="og:description" content="Encuentra tu próxima camiseta.">
   <title>FutGonZ — Camisetas de fútbol</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+.consult-note--alert{display:flex;align-items:center;gap:.6rem;margin-top:.85rem;padding:.85rem 1rem;border:2px solid #ff2d2d;border-radius:12px;background:rgba(255,45,45,.12);color:#ff2d2d;font-weight:800;font-size:.95rem;line-height:1.35;animation:consultPulse 1.6s ease-in-out infinite}
+.consult-note--alert::before{content:"📋";font-size:1.35rem;flex:none}
+@keyframes consultPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,45,.4)}50%{box-shadow:0 0 0 8px rgba(255,45,45,0)}}
+@media (prefers-reduced-motion: reduce){.consult-note--alert{animation:none}}
+</style>
 </head>
 <body>
   <a class="skip" href="#catalogo">Saltar al catálogo</a>
@@ -140,7 +146,7 @@
 <textarea id="requestDetails" rows="3" placeholder="Cualquier detalle que nos ayude a encontrarla"></textarea>
 </label>
 <button id="sendRequest" class="instagram" type="button">Enviar solicitud por Instagram <span>↗</span></button>
-<p class="consult-note">Al enviar se copiará tu solicitud para que solo tengas que pegarla en el chat de Instagram y enviarla.</p>
+<p class="consult-note consult-note--alert">Al enviar se copiará tu solicitud para que solo tengas que pegarla en el chat de Instagram y enviarla.</p>
 </div>
 </dialog>
   <template id="cardTemplate">
